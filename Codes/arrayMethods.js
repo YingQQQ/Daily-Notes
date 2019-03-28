@@ -1,12 +1,11 @@
-/* eslint-disable function-paren-newline */
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-param-reassign */
-/* eslint-disable implicit-arrow-linebreak */
 /* eslint-disable no-shadow */
 
 // 1. ary
 const ary = (fn, n) => (...args) => fn(...args.slice(0, n));
 const firstTwoMax = ary(Math.max, 2);
-const finalAry = [[2, 6, 'a'], [8, 4, 6], [10]].map(x => firstTwoMax(...x));
+const finalAry = [[2, 6, "a"], [8, 4, 6], [10]].map(x => firstTwoMax(...x));
 // [6, 8, 10]
 console.log(finalAry);
 
@@ -19,9 +18,9 @@ const call = (key, ...args) => context => context[key](...args);
  */
 
 Promise.resolve([1, 2, 3])
-  .then(call('map', x => 2 * x))
+  .then(call("map", x => 2 * x))
   .then(console.log); // [ 2, 4, 6 ]
-const map = call.bind(null, 'map');
+const map = call.bind(null, "map");
 Promise.resolve([1, 2, 3])
   .then(map(x => 2 * x))
   .then(console.log); // [ 2, 4, 6 ]
@@ -39,7 +38,7 @@ pall(p1, p2, p3).then(console.log);
 // 4. flip
 const flip = fn => (first, ...rest) => fn(...rest, first);
 const a = {
-  name: 'John Smith'
+  name: "John Smith"
 };
 
 const b = {};
@@ -105,14 +104,14 @@ const promisify = func => (...args) =>
   });
 
 const deloy = promisify((time, callback) => setTimeout(callback, time));
-deloy(2000).then(console.log('Hi'));
+deloy(2000).then(console.log("Hi"));
 
 // 10. rearg
 
 const rearg = (fuc, indexs) => (...args) =>
   fuc(...indexs.map(index => args[index]));
 const rearged = rearg((...args) => [...args], [2, 1, 0]);
-const reargAry = rearged('b', 'c', 'a');
+const reargAry = rearged("b", "c", "a");
 console.log(reargAry);
 
 // 11. spreadOver
@@ -124,7 +123,7 @@ console.log(spreadOverAry);
 // 12. unary
 const unary = fn => val => fn(val);
 
-const unaryAry = ['6', '8', '10'].map(unary(parseInt));
+const unaryAry = ["6", "8", "10"].map(unary(parseInt));
 console.log(unaryAry);
 
 // fllowers are Array methods
@@ -155,7 +154,7 @@ const bifurcate = (arr, filter) =>
     [[], []]
   );
 console.log(
-  bifurcate(['beep', 'boop', 'foo', 'bar'], [true, true, false, true])
+  bifurcate(["beep", "boop", "foo", "bar"], [true, true, false, true])
 ); // [ ['beep', 'boop', 'bar'], ['foo'] ]
 
 // 17. bifucateBy
@@ -168,7 +167,7 @@ const bifurcateBy = (arrs, fn) =>
     },
     [[], []]
   );
-console.log(bifurcateBy(['beep', 'boop', 'foo', 'bar'], x => x[0] === 'b')); // [ ['beep', 'boop', 'bar'], ['foo'] ];
+console.log(bifurcateBy(["beep", "boop", "foo", "bar"], x => x[0] === "b")); // [ ['beep', 'boop', 'bar'], ['foo'] ];
 
 // 18. chunk
 
@@ -186,20 +185,20 @@ console.log(chunk([1, 2, 3, 4, 5], 2)); // [[1,2],[3,4],[5]]
 
 const compact = arr => arr.filter(Boolean);
 
-console.log(compact([0, 1, false, 2, '', 3, 'a', 'e' * 23, NaN, 's', 34])); // [ 1, 2, 3, 'a', 's', 34 ];
+console.log(compact([0, 1, false, 2, "", 3, "a", "e" * 23, NaN, "s", 34])); // [ 1, 2, 3, 'a', 's', 34 ];
 
 // 20. countBy
 
 const countBy = (arr, fn) =>
   arr
-    .map(typeof fn === 'function' ? fn : val => val[fn])
+    .map(typeof fn === "function" ? fn : val => val[fn])
     .reduce((previous, current) => {
       previous[current] = (previous[current] || 0) + 1;
       return previous;
     }, {});
 
 console.log(countBy([6.1, 4.2, 6.3], Math.floor)); // {4: 1, 6: 2}
-console.log(countBy(['one', 'two', 'three'], 'length')); // {3: 2, 5: 1}
+console.log(countBy(["one", "two", "three"], "length")); // {3: 2, 5: 1}
 
 // 21. countOccurrences
 
@@ -372,11 +371,11 @@ console.log(initializeArrayWithValue(5, 2)); // [2, 2, 2, 2, 2]
 // 41. initializeNDArray
 
 const initializeNDArray = (val, ...args) =>
-  (args.length === 0
+  args.length === 0
     ? val
     : Array.from({ length: args[0] }).map(() =>
-      initializeNDArray(val, ...args.slice(1))
-    ));
+        initializeNDArray(val, ...args.slice(1))
+      );
 
 console.log(initializeNDArray(5, 2)); // [5, 5]
 
@@ -396,3 +395,8 @@ const intersectionBy = (a, b, fn) => {
 };
 
 console.log(intersectionBy([2.1, 1.2], [2.3, 3.4], Math.floor)); // [2.1];
+
+const intersectionByu = (a, b, fn) => {
+  const bSet = new Set(b.map(fn));
+  return a.filter(val => bSet.has(fn(val)));
+};
