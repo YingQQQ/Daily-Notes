@@ -130,29 +130,158 @@ const news = function newFn(fn, ...args) {
 //  继承
 
 function Person(username) {
-  this.skills = ['php', 'golang', 'javascript', 'css'];
+  this.skills = ["php", "golang", "javascript", "css"];
   this.username = username;
 }
 
 Person.prototype.showName = function show() {
   return this.username;
-}
+};
 
 function Teacher(username) {
   // 获取Person 属性
-  Person.call(this, username)
+  Person.call(this, username);
 }
 
 function dummy(superPrototype) {
-  const D = function () {}
+  const D = function() {};
   D.prototype = superPrototype;
   return new D();
 }
 
 function inheritObje(subClass, superClass) {
-  const dumpPrototype = dummy(superClass.prototype) // 复制父类的方法
-  subClass.prototype = dumpPrototype;  //再把这个对象给子类的原型对象
+  const dumpPrototype = dummy(superClass.prototype); // 复制父类的方法
+  subClass.prototype = dumpPrototype; //再把这个对象给子类的原型对象
   superClass.constructor = subClass; //constructor指向子类构造函数
 }
 
 inheritObje(Teacher, Person);
+
+// ['1', '2', '3'].map(parseInt)
+/**
+ * 拆分为parseInt(1, 0) => 0 默认是10进制，返回1本身
+ * 拆分为parseInt(2, 1) => 0 是1进制，2大于进制本身， 无法解析，返回NaN
+ * 拆分为parseInt(3, 2) => 0 是2进制，3大于进制本身， 无法解析，返回NaN
+ */
+["1", "2", "3"].map(parseInt); // [1, NaN, NaN]
+
+// 什么是防抖和节流？有什么区别？如何实现？
+
+// 1. 防抖
+
+/**
+ * 防抖函数
+ * @param {function} func 执行函数
+ * @param {number} wait 延迟执行时间
+ * @param {boolen} immediate 是否立刻执行
+ */
+function debounce(func, wait = 50, immediate = false) {
+  let timer, context, args;
+
+  const later = () =>
+    setTimeout(() => {
+      timer = null;
+      if (!immediate) {
+        func.apply(context, args);
+        context = null;
+        args = null;
+      }
+    }, wait);
+
+  return function realPart(...params) {
+    if (!timer) {
+      timer = later();
+      if (immediate) {
+        func.apply(this, params);
+      } else {
+        context = this;
+        args = params;
+      }
+    } else {
+      clearTimeout(timer);
+      timer = later();
+    }
+  };
+}
+
+/**
+ *
+ * @param {function} func 执行函数
+ * @param {number} wait 间隔时间
+ * @param  {object} options   如果想忽略开始函数的的调用，传入{leading: false}。
+ *                            如果想忽略结尾函数的调用，传入{trailing: false}
+ *                            两者不能共存，否则函数不能执行
+ */
+
+function throttle(func, wait, options = {}) {
+  let result, timeout, context, args;
+  let previous = 0; // 之前的时间戳
+
+  const later = () => {
+    previous = options.leading === false ? 0 : +new Date();
+    timeout = null;
+    result = func.apply(context, args);
+    context = null;
+    args = null;
+  };
+
+  return function throttled(...params) {
+    const now = +new Date();
+    if (!previous && options.leading === false) {
+      previous = now;
+    }
+    const remaining = wait - (now - previous);
+    context = this;
+    args = params;
+    if (remaining <= 0 || remaining > wait) {
+      if (timeout) {
+        clearTimeout(timeout);
+        timeout = null;
+      }
+      previous = now;
+      result = func.apply(context, args);
+      if (!timeout) {
+        context = null;
+        args = null;
+      }
+    } else if (!timeout && options.trailing !== false) {
+      // 当不设置options的时候，trailing为undefine
+      //undefine !== false => true
+      timeout = setTimeout(later, remaining);
+    }
+    return result;
+  };
+}
+
+// 介绍下重绘和回流（Repaint & Reflow），以及如何进行优化
+// https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/24
+
+// 浏览器缓存读取规则
+// https://www.jianshu.com/p/54cc04190252
+
+// 实现一个 sleep 函数
+
+const sleep = time => new Promise(resolve => setTimeout(resolve, time));
+// 发布新闻时需要提醒发布的时间。写一个函数，传递一个参数为时间戳，完成时间的格式化。如果发布一分钟内，输出：刚刚；n 分钟前发布，输出：n分钟前；超过一个小时，输出：n小时前；超过一天，输出：n天前；但超过一个星期，输出发布的准确时间
+// 字节跳动 笔试2：格式化发布时间
+function formatTime(date) {
+  const min = 60 * 1000;
+  const hour = 60 * min;
+  const day = 24 * hour;
+  const week = 7 * day;
+  const time = Date.now() - date;
+  if (time < min) {
+    return "刚刚";
+  }
+  if (time < hour) {
+    return `${Math.floor(time / min)}分钟前`;
+  }
+  if (time < day) {
+    return `${Math.floor(time / hour)}小时前`;
+  }
+  if (time < week) {
+    return `${Math.floor(time / day)}天前`;
+  }
+  return new Date(date).toLocaleString();
+}
+console.log(formatTime(1554111847534)); // 发布时的时间戳
