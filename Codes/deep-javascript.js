@@ -1,7 +1,7 @@
 /**
  * 第一部分,比较两个对象是否相同,主要是比较0和-0, 和NaN
- * @param {any} x 
- * @param {any} y 
+ * @param {any} x
+ * @param {any} y
  */
 const objectIS = function objectIs(x, y) {
   const isNegative = a => a === 0 && 1 / a === -Infinity;
@@ -65,3 +65,18 @@ console.log(3 > 2 > 1);
 console.log(Number('2') < 1);
 console.log('2' < 1);
 console.log(1 < '2');
+
+/**
+ * == 和 === 的区别，==比较的时候会隐式的转换类型, 而=== 不会
+ */
+
+ const workNumber = 42;
+const workNumberArray = [42];
+
+// 因为[42]字符串化'42', 然后 42 == '42'; 隐式转换 42 == 42
+// eslint-disable-next-line eqeqeq
+console.log(workNumber == workNumberArray); // true
+console.log(workNumber === workNumberArray); // false
+
+
+console.log('Frank' > 'Suzy');

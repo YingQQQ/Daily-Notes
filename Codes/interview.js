@@ -119,12 +119,17 @@ const widthTraversal = node => {
 };
 
 // 第 14 题：如何实现一个 new
+// 每一个new都有4个步骤
+// 1. 返回一个空对象
+// 2. 链接空对象到原本的原型上
+// 3. 改变this的指向
+// 4. 如果不是返回对象,那么返回this
 
 const news = function newFn(fn, ...args) {
-  const obj = Object.create(fn.prototype); // 创造对象原型
+  const obj = Object.create(fn.prototype); // 创造对象原型, Object.create方法返回的永远是个空对象,只是连接原型
   const ret = fn.apply(obj, args); // 改变this 指向
 
-  return ret instanceof Object ? ret : obj;
+  return ret instanceof Object ? ret : obj; // 如果不是返回对象,那么返回this
 };
 
 //  继承
