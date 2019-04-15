@@ -152,21 +152,47 @@ if (!Object.create) {
   Object.create = function objectCreate(o) {
     function F() {} // 创建一个没有副作用的空函数
     F.prototype = o; // 把需要继承的方法赋值给原型
-    return new F();  // 实例化空函数,可以保护O对象的方法
+    return new F(); // 实例化空函数,可以保护O对象的方法
   };
 }
-
 
 // ES6 部分
 
 // 模板字符串
-const amount = 13.3;
-const other = 11;
+const amount = "Home";
+const other = "hospital";
 
 function formatCurrent(string, ...value) {
-  console.log(Array.isArray(string)) // true
-  console.log(`string:${string}`); // true
-  console.log(`valus => ${value}`)
+  // console.log(Array.isArray(string)) // true
+  let str = "";
+  // eslint-disable-next-line no-plusplus
+  for (let index = 0; index < string.length; index++) {
+    if (index > 0) {
+      str += String(value[index - 1]).toUpperCase();
+    }
+    str += string[index];
+  }
+  return str;
 }
 
-const msg = formatCurrent`The total for your order is ${amount} and ${other}`
+console.log(
+  formatCurrent`The total for your order is ${amount} and ${other}` ===
+    "The total for your order is HOME and HOSPITAL"
+);
+
+// String padding 和 String tramming(ES2019)
+
+const str = "hello";
+
+// str.padEnd 同理
+str.padStart(5); // 'hello' 没有改变内容和,因为hello本来的长度就是5, 因为我们的使用的是ASCII32字符空间
+str.padStart(8); // '   hello'
+str.padStart(8, "#"); // '###hello'
+str.padStart(8, "12345"); // '123hello', 填充内容过长会被截取
+str.padStart(8, "ab"); // 'abahello', 填充内容段誉长度,则填充内容会被循环
+
+// destructuring 结构， 只要是其中的,(comma逗号)
+
+const [first, , third, ...others] = [1, 2, 3, 4, 5, 6];
+
+console.log(first, third, others); // 1, 3, [4,5,6]
