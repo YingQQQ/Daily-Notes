@@ -1,3 +1,4 @@
+
 /**
  * 已知如下数组
  * var arr = [ [1, 2, 2], [3, 4, 5, 5], [6, 7, 8, 9, [11, 12, [12, 13, [14] ] ] ], 10];
@@ -290,3 +291,68 @@ function formatTime(date) {
   return new Date(date).toLocaleString();
 }
 console.log(formatTime(1554111847534)); // 发布时的时间戳
+
+// lazyMan
+
+class LazyMan {
+  constructor(name) {
+    this.name = name;
+    this.task = [];
+    console.log(`My name is ${name}`);
+    setTimeout(() => {
+      this.next();
+    }, 0);
+  }
+  eat(food) {
+    const fn = () => {
+      console.log(`eatting ${food}`);
+      this.next();
+    };
+    this.task.push(fn);
+    return this;
+  }
+  sleep(time) {
+    const fn = () =>
+      setTimeout(() => {
+        console.log(`I have sleep ${time} ms`);
+        this.next();
+      }, time);
+    this.task.push(fn);
+    return this;
+  }
+  sleepFirst(time) {
+    const fn = () =>
+      setTimeout(() => {
+        console.log(`First I nded to sleep ${time} ms`);
+        this.next();
+      }, time);
+    this.task.unshift(fn);
+    return this;
+  }
+  next() {
+    const fn = this.task.shift();
+    fn && fn();
+  }
+}
+
+// const lazyMan = new LazyMan("Tohn");
+
+// lazyMan
+//   .eat("lunch")
+//   .sleepFirst(5000)
+//   .sleep(10000)
+//   .eat('dinner');
+
+
+// 如何实现一个promise
+
+class MyPromise {
+  constructor(fn) {
+    if (typeof fn !== 'function') {
+      throw Error('fn must be a function')
+    }
+    this.status = 'pendding'
+  }
+}
+
+const myPromise = new MyPromise(() => {})

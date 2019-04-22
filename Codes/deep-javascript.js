@@ -1,3 +1,4 @@
+/* eslint-disable no-plusplus */
 /**
  * 第一部分,比较两个对象是否相同,主要是比较0和-0, 和NaN
  * @param {any} x
@@ -196,3 +197,128 @@ str.padStart(8, "ab"); // 'abahello', 填充内容段誉长度,则填充内容�
 const [first, , third, ...others] = [1, 2, 3, 4, 5, 6];
 
 console.log(first, third, others); // 1, 3, [4,5,6]
+
+const o1 = {
+  a: {
+    b: 2,
+    c: 3
+  }
+};
+
+/**
+ * 如果
+ * const o1 = {}
+ * 那么我们需要如何做才能避免typeError,当然是赋予默认值
+ * const a1 = o1.a || {};
+ */
+
+const a1 = o1.a;
+const b1 = a1.b;
+const c1 = a1.c;
+
+console.log(b1, c1);
+/**
+ * 如果
+ * const o1 = {}
+ * 那么我们需要如何做才能避免typeError,结构的时候应该如何避免
+ * const {
+ *   a: {
+ *     b,
+ *     c
+ *   } = {}
+ * } = o1;
+ * 如果我们要设置默认值,应该如下
+ * const {
+ *   a: {
+ *     b = 10,
+ *     c = 20
+ *   } = {}
+ * } = o1;
+ */
+
+const { a: { b, c } = {} } = o1;
+
+console.log(b, c);
+
+// iterator 和 generators
+// 我们使用的...其实就iterator 和 generators 结合的表现
+
+function *createFlow() {
+  const num = 10;
+  const newNum = yield num; // 在这里暂停， 传入的参数会赋值给右边的label,并不是yield之后的结果
+  // yield 5 + newNum;
+  const newNum2 = yield 5 + newNum;
+  yield 6 + newNum2;
+  yield 99;
+}
+
+const returnNum = createFlow();
+
+const elem1 = returnNum.next(); // value : 10
+const elem2 = returnNum.next(2); // value : 7
+const elem3 = returnNum.next(3); // value : 9
+const elem4 = returnNum.next(); // value : 99
+const elem5 = returnNum.next(); // value : undefined
+
+console.log(elem1, elem2, elem3, elem4, elem5);
+
+
+// eslint-disable-next-line no-unused-vars
+const obj = {
+  a: 1,
+  b: 2,
+  c: 3
+};
+
+
+// TypeError: obj is not iterable
+// console.log([...obj]);
+// for (const v of obj) {
+//   console.log(v);
+// }
+// 因为Object 没有内建的iterator
+
+const objIterator = {
+  a: 1,
+  b: 2,
+  c: 3,
+  [Symbol.iterator]: function contextIterator() {
+    const keys = Object.keys(this);
+    let index = 0;
+    return {
+      next: () =>
+        index < keys.length
+          ? {
+              done: false,
+              value: this[keys[index++]]
+            }
+          : {
+              done: true,
+              value: undefined
+            }
+    };
+  }
+  // // 使用generators同样有效
+  // *[Symbol.iterator] () {
+  //   // eslint-disable-next-line no-restricted-syntax
+  //   for (const key of Object.keys(this)) {
+  //     yield this[key];
+  //   }
+  // }
+};
+console.log([...objIterator]);
+
+
+// RegExp(ES2018)
+// async-generators-iteration
+// 这是一种懒迭代
+
+// eslint-disable-next-line no-unused-vars
+async function main(urls) {
+  // eslint-disable-next-line no-restricted-syntax
+  for await (const text of fetch(urls)) {
+    console.log(text);
+  }
+}
+
+// requestIdleCallback
