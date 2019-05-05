@@ -1,4 +1,3 @@
-
 /**
  * 已知如下数组
  * var arr = [ [1, 2, 2], [3, 4, 5, 5], [6, 7, 8, 9, [11, 12, [12, 13, [14] ] ] ], 10];
@@ -303,6 +302,7 @@ class LazyMan {
       this.next();
     }, 0);
   }
+
   eat(food) {
     const fn = () => {
       console.log(`eatting ${food}`);
@@ -343,16 +343,139 @@ class LazyMan {
 //   .sleep(10000)
 //   .eat('dinner');
 
-
 // 如何实现一个promise
 
-class MyPromise {
-  constructor(fn) {
-    if (typeof fn !== 'function') {
-      throw Error('fn must be a function')
+const PENDING = Symbol("pending");
+const FULFILLED = Symbol("fulfilled");
+const REJECTED = Symbol("rejected");
+
+function MyPromise(executor) {
+  // 初始状态
+  this.state = PENDING;
+  // 初始值
+  this.date = null;
+  this.onResolvefns = [];
+  this.onRejectedfns = [];
+
+  // FULFILLED 状态之后要执行的函数
+  const resolve = value => {
+    if (value instanceof MyPromise) {
+      return value.then(resolve, rejected);
     }
-    this.status = 'pendding'
+    setTimeout(() => {
+      if (this.state === PENDING) {
+        this.state = FULFILLED;
+        this.date = value;
+        this.onResolvefns.forEach(fn => typeof fn === "function" && fn(value));
+      }
+    });
+  };
+
+  // REJECTED 状态之后要执行的函数
+  const rejected = value => {
+    setTimeout(() => {
+      if (this.state === PENDING) {
+        this.state = REJECTED;
+        this.date = value;
+        this.onRejectedfns.forEach(fn => typeof fn === "function" && fn(value));
+      }
+    });
+  };
+
+  try {
+    executor(resolve, rejected); // promise 异步执行
+  } catch (error) {
+    rejected(error);
   }
 }
 
-const myPromise = new MyPromise(() => {})
+MyPromise.prototype.then = function then(onresolve, onrejected) {
+  onrejected =
+    typeof onrejected === "function"
+      ? onrejected
+      : function onrejectDummy(value) {
+          return value;
+        };
+  onresolve =
+    typeof onresolve === "function"
+      ? onresolve
+      : function onresolveDummy(value) {
+          return value;
+        };
+  const self = this;
+
+  if (this.state === FULFILLED) {
+    return new MyPromise((resolve, rejected) => {
+      setTimeout(() => {
+        try {
+          const data = onresolve(self.date);
+          if (data instanceof MyPromise) {
+            data.then(resolve, rejected);
+          }
+          resolve(data); // 返回给then
+        } catch (error) {
+          rejected(error);
+        }
+      });
+    });
+  }
+
+  if (this.state === REJECTED) {
+    return new MyPromise((resolve, rejected) => {
+      setTimeout(() => {
+        try {
+          const data = onrejected(self.date);
+          if (data instanceof MyPromise) {
+            data.then(resolve, rejected);
+          }
+        } catch (error) {
+          rejected(error);
+        }
+      });
+    });
+  }
+
+  return new MyPromise((resolve, rejected) => {
+    self.onRejectedfns.push(value => {
+      try {
+        const data = onrejected(self.date);
+        if (data instanceof MyPromise) {
+          data.then(resolve, rejected);
+        }
+        rejected(data);
+      } catch (error) {
+        reject(error);
+      }
+    });
+    self.onResolvefns.push(value => {
+      try {
+        const data = onresolve(self.date);
+        if (data instanceof MyPromise) {
+          data.then(resolve, rejected);
+        }
+        resolve(data);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  });
+};
+
+// new MyPromise((resolve, reject) => {
+//   const random = Number.parseInt(Math.random() * 10);
+//   if (random >= 5) {
+//     return setTimeout(() => {
+//       resolve(2);
+//     }, 1000);
+//   }
+//   return reject("456");
+// })
+//   .then()
+//   .then(data => {
+//     console.log(data + 1);
+
+//     return data + 1;
+//   })
+//   .then(data => {
+//     console.log(data + 1);
+//   });
