@@ -157,7 +157,7 @@ function dummy(superPrototype) {
 function inheritObje(subClass, superClass) {
   const dumpPrototype = dummy(superClass.prototype); // 复制父类的方法
   subClass.prototype = dumpPrototype; //再把这个对象给子类的原型对象
-  superClass.constructor = subClass; //constructor指向子类构造函数
+  dumpPrototype.constructor = subClass; //constructor指向子类构造函数
 }
 
 inheritObje(Teacher, Person);
@@ -479,3 +479,134 @@ MyPromise.prototype.then = function then(onresolve, onrejected) {
 //   .then(data => {
 //     console.log(data + 1);
 //   });
+
+// 实现一个深拷贝
+
+function deepClone(sources) {
+  if (!sources || typeof sources !== 'object') {
+    throw new Error('error arguments', 'shallowClone');
+  }
+  const target = Array.isArray(sources) ? []:{};
+  for (const key in sources) {
+    if (Object.hasOwnProperty.call(sources, key)) {
+      if (sources[key] && typeof sources[key] === 'object') {
+        target[key] = Array.isArray(sources[key]) ? []:{};
+        target[key] = deepClone(sources[key]);
+      } else {
+        target[key] = sources[key];
+      }
+    }
+  }
+  return target;
+}
+
+if (!Promise) {
+  const PENDING = Symbol("PENDING");
+  const FULFILLED = Symbol("fulfilled");
+  const REJECTED = Symbol("rejected");
+  class Promise {
+    constructor(executor) {
+      this.data = null;
+      this.onRejectedfns = [];
+      this.onResolvefns = [];
+      this.state = PENDING;
+
+      const resolve = value => {
+        if (value instanceof Promise) {
+          return value.then(resolve, rejected);
+        }
+        setTimeout(() => {
+          if (this.state === PENDING) {
+            this.state = FULFILLED;
+            this.data = value;
+            this.onResolvefns.forEach(
+              fn => fn && typeof fn === "function" && fn()
+            );
+          }
+        });
+      };
+
+      const rejected = value => {
+        if (value instanceof Promise) {
+          return value.then(resolve, rejected);
+        }
+        setTimeout(() => {
+          if (this.state === PENDING) {
+            this.state = REJECTED;
+            this.data = value;
+            this.onRejectedfns.forEach(
+              fn => fn && typeof fn === "function" && fn()
+            );
+          }
+        });
+      };
+
+      try {
+        executor(resolve, rejected);
+      } catch (error) {
+        rejected(err);
+      }
+    }
+    then(onresolve, onrejected) {
+      onresolve = typeof onresolve === "function" ? onresolve : value => value;
+      onrejected =
+        typeof onrejected === "function" ? onrejected : value => value;
+      const self = this;
+      if (this.state === FULFILLED) {
+        return new Promise((resolve, rejected) => {
+          setTimeout(() => {
+            try {
+              const data = onresolve(self.data);
+              if (data instanceof Promise) {
+                data.then(resolve, reject);
+              }
+              resolve(data);
+            } catch (error) {
+              rejected(err);
+            }
+          });
+        });
+      }
+      if (this.state === REJECTED) {
+        return new Promise((resolve, rejected) => {
+          setTimeout(() => {
+            try {
+              const data = onrejected(self.data);
+              if (data instanceof Promise) {
+                data.then(resolve, reject);
+              }
+              resolve(data);
+            } catch (error) {
+              rejected(err);
+            }
+          });
+        });
+      }
+
+      return new Promise((resolve, reject) => {
+        self.onRejectedfns.push(value => {
+          try {
+            const data = onrejected(self.data);
+            if (data instanceof Promise) {
+              data.then(resolve, reject);
+            }
+            reject(data);
+          } catch (error) {
+            reject(data);
+          }
+        });
+        self.onResolvefns.push(value => {
+          try {
+            const data = onresolve(self.data);
+            if (data instanceof Promise) {
+              data.then(resolve, reject);
+            }
+            resolve(data);
+          } catch (error) {
+            reject(data);
+          }
+        });
+      });
+    }
+  }
+}
