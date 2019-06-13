@@ -483,14 +483,14 @@ MyPromise.prototype.then = function then(onresolve, onrejected) {
 // 实现一个深拷贝
 
 function deepClone(sources) {
-  if (!sources || typeof sources !== 'object') {
-    throw new Error('error arguments', 'shallowClone');
+  if (!sources || typeof sources !== "object") {
+    throw new Error("error arguments", "shallowClone");
   }
-  const target = Array.isArray(sources) ? []:{};
+  const target = Array.isArray(sources) ? [] : {};
   for (const key in sources) {
     if (Object.hasOwnProperty.call(sources, key)) {
-      if (sources[key] && typeof sources[key] === 'object') {
-        target[key] = Array.isArray(sources[key]) ? []:{};
+      if (sources[key] && typeof sources[key] === "object") {
+        target[key] = Array.isArray(sources[key]) ? [] : {};
         target[key] = deepClone(sources[key]);
       } else {
         target[key] = sources[key];
@@ -609,4 +609,18 @@ if (!Promise) {
       });
     }
   }
+}
+
+if (!Function.prototype.bind) {
+  Function.prototype.bind = function bind() {
+    // 保存参数和执行上下文
+    const [context, ...args] = [...arguments];
+    const func = this;
+    const retFnc = function dommy() {
+      Array.prototype.push.apply(args, arguments);
+      return func.apply(this instanceof func ? this : context, args);
+    };
+    retFnc.prototype = new func();
+    return retFnc;
+  };
 }
