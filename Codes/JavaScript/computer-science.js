@@ -5,7 +5,6 @@
 
 function crossAdd(input = []) {
   const answer = [];
-  // eslint-disable-next-line no-plusplus
   for (let i = 0; i < input.length; i++) {
     const goingUp = input[i];
     const goingDown = input[input.length - 1 - i];
@@ -15,7 +14,6 @@ function crossAdd(input = []) {
 }
 
 function find(needle, haystack = []) {
-  // eslint-disable-next-line no-plusplus
   for (let i = 0; i < haystack.length; i++) {
     if (haystack[i] === needle) {
       return true;
@@ -50,4 +48,3 @@ function bubbleSort(nums) {
 
 bubbleSort(arr);
 console.log(arr);
-

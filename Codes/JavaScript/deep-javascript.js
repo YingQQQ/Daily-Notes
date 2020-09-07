@@ -1,4 +1,5 @@
 /* eslint-disable no-plusplus */
+/* eslint-disable no-unused-vars */
 /**
  * 第一部分,比较两个对象是否相同,主要是比较0和-0, 和NaN
  * @param {any} x
@@ -243,7 +244,7 @@ console.log(b, c);
 // iterator 和 generators
 // 我们使用的...其实就iterator 和 generators 结合的表现
 
-function *createFlow() {
+function* createFlow() {
   const num = 10;
   const newNum = yield num; // 在这里暂停， 传入的参数会赋值给右边的label,并不是yield之后的结果
   // yield 5 + newNum;
@@ -262,14 +263,12 @@ const elem5 = returnNum.next(); // value : undefined
 
 console.log(elem1, elem2, elem3, elem4, elem5);
 
-
 // eslint-disable-next-line no-unused-vars
 const obj = {
   a: 1,
   b: 2,
   c: 3
 };
-
 
 // TypeError: obj is not iterable
 // console.log([...obj]);
@@ -308,7 +307,6 @@ const objIterator = {
 };
 console.log([...objIterator]);
 
-
 // RegExp(ES2018)
 // async-generators-iteration
 // 这是一种懒迭代
@@ -321,4 +319,36 @@ async function main(urls) {
   }
 }
 
-// requestIdleCallback
+/**
+ * 缓存函数, 目的就是提高性能，无需每次都生成一样的函数
+ * @param {function} fn
+ * const memoizedFibonacci = memoize(fibonacci);
+ */
+const memoize = fn =>
+  new Proxy(fn, {
+    caches: new Map(),
+    apply(target, thisArg, argArray) {
+      const cacheKey = argArray.toString();
+      const cacheValue = this.caches.get(cacheKey);
+      if (!cacheValue) {
+        this.caches.set(cacheKey, target.apply(thisArg, argArray));
+      }
+      return cacheValue;
+    }
+  });
+
+/**
+ * 提供从左到右的pipe函数运算
+ * @param  {arrays} fns
+ * const sum = pipeAsyncFunctions(
+      x => x + 1,
+      x => new Promise(resolve => setTimeout(() => resolve(x + 2), 1000)),
+      x => x + 3,
+      async x => (await x) + 4
+    );
+    (async() => {
+      console.log(await sum(5)); // 15 (after one second)
+    })();
+ */
+const pipeAsyncFunctions = (...fns) => arg =>
+  fns.reduce((f, g) => f.then(g), Promise.resolve(arg));

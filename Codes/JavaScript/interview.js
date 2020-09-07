@@ -320,6 +320,7 @@ class LazyMan {
     this.task.push(fn);
     return this;
   }
+
   sleepFirst(time) {
     const fn = () =>
       setTimeout(() => {

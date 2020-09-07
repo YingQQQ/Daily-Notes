@@ -394,9 +394,13 @@ const intersectionBy = (a, b, fn) => {
   return a.filter(val => bSet.has(fn(val)));
 };
 
+
+
 console.log(intersectionBy([2.1, 1.2], [2.3, 3.4], Math.floor)); // [2.1];
 
 const intersectionByu = (a, b, fn) => {
   const bSet = new Set(b.map(fn));
-  return a.filter(val => bSet.has(fn(val)));
+    return a.filter(val => bSet.has(fn(val)));
 };
+
+// const just = Array.isArray();
