@@ -34,7 +34,7 @@ const serializeForm = form =>
  * @param {string} url
  */
 const parseQuery = url => {
-  let queryObj = {};
+  const queryObj = {};
   const reg = /[?&]([^=&#]+)=([^&#]*)/g;
   const querys = url.match(reg);
   if (querys) {
@@ -43,7 +43,7 @@ const parseQuery = url => {
       const key = query[0].substr(1);
       const value = query[1];
       if (queryObj[key]) {
-        queryObj = [].concat(queryObj[key], value);
+        queryObj[key] = [].concat(queryObj[key], value);
       } else {
         queryObj[key] = value;
       }
@@ -51,3 +51,6 @@ const parseQuery = url => {
   }
   return queryObj;
 };
+
+// 过滤除了img a之外的内容
+const filterReg = /<(?!img|a|\/a).*?>/g;

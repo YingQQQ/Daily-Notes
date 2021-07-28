@@ -506,6 +506,54 @@ if (!Promise) {
   const FULFILLED = Symbol("fulfilled");
   const REJECTED = Symbol("rejected");
   class Promise {
+    static resolve = value => new Promise((resolve, reject) => resolve(value));
+
+    static reject = value => new Promise((resolve, reject) => reject(value));
+
+    static all = (promises = []) =>
+      new Promise((resolve, reject) => {
+        const results = [];
+        let counter = 0;
+
+        const handlerResult = (value, i) => {
+          results[i] = value;
+          if (++counter === promise.length) {
+            resolve(results);
+          }
+        };
+
+        promises.forEach((item, index) => {
+          if (item instanceof Promise && typeof item.then === "function") {
+            item.then(
+              data => {
+                handlerResult(data, index);
+              },
+              error => {
+                reject(error);
+              }
+            );
+          } else {
+            handlerResult(item, index);
+          }
+        });
+      });
+
+    static race = (promises = []) =>
+      new Promise((resolve, reject) => {
+        promises.forEach((item, index) => {
+          if (item instanceof Promise && typeof item.then === "function") {
+            item.then(
+              value => {
+                resolve(value);
+              },
+              reason => {
+                reject(reason);
+              }
+            );
+          }
+        });
+      });
+
     constructor(executor) {
       this.data = null;
       this.onRejectedfns = [];
@@ -617,11 +665,102 @@ if (!Function.prototype.bind) {
     // 保存参数和执行上下文
     const [context, ...args] = [...arguments];
     const func = this;
-    const retFnc = function dommy() {
+    const retFnc = function dummy() {
       Array.prototype.push.apply(args, arguments);
       return func.apply(this instanceof func ? this : context, args);
     };
     retFnc.prototype = new func();
     return retFnc;
   };
+}
+
+function NewKey(fn, ...args) {
+  const instance = Object.create(fn.prototype);
+  const newFn = instance.apply(fn, ...args);
+
+  return newFn && typeof newFn === "Object" ? newFn : instance;
+}
+
+if (!Function.prototype.call) {
+  Function.prototype.call = function call(thisArg, ...args) {
+    //1.判断参数合法性
+    if (thisArg === null || thisArg === undefined) {
+      thisArg = window;
+    } else {
+      //创建一个可包含数字/字符串/布尔值的对象，thisArg 会指向一个包含该原始值的对象。
+      thisArg = Object(thisArg);
+    }
+    //2.搞定this的指向
+    const constants = Symbol.for("thisKey");
+    thisArg[constants] = this;
+
+    const result = thisArg[constants](...args);
+
+    delete thisArg[constants];
+
+    return result;
+  };
+
+  let obj = {
+    name: "jack"
+  };
+
+  function func() {
+    console.log(this.name);
+  }
+
+  // jack
+  func.call(obj);
+}
+/**
+ * A: 你现在有空不？我想跟你说点事情
+ * B：（2-3mins）在看剧 什么事情呀
+ * A：我们结束吧
+ * A：这几天我一直在想这个事情，怎么对你开口，本来想着见面说但是想想可能通过微信更加容易接受吧
+ * B：
+ */
+if (!Function.prototype.apply) {
+  Function.prototype.apply = function apply(thisArg, params) {
+    if (thisArg === null || thisArg === undefined) {
+      thisArg = window;
+    } else {
+      thisArg = Object(thisArg);
+    }
+    const constants = Symbol.for("thisKey");
+    thisArg[constants] = this;
+    let result = undefined;
+    if (params) {
+      if (Array.isArray(params) && !!params.length) {
+        result = thisArg[constants](...params);
+      }
+    } else {
+      result = thisArg[constants]();
+    }
+    return result;
+  };
+
+  let obj = {
+    name: "jack"
+  };
+
+  function func() {
+    console.log(this.name);
+  }
+
+  func.apply(obj);
+}
+
+if (!Function.prototype.bind) {
+  Function.prototype.bind = function bind(thisArg, ...parentParams) {
+    const thisFn = this;
+    const fnForBind = function fnForBind(...params) {};
+    fnForBind.prototype = Object.create(thisFn.prototype);
+
+    return fnForBind;
+  };
+
+  let obj = {
+    name: "1891"
+  };
+  func.bind(obj, { name: "coffee" })("二次传参");
 }
